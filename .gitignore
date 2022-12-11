@@ -7,10 +7,6 @@
 [Ll]ibrary/
 
 # Unity editor backup files
-*.meta
-*.unityproj
-*.asset
-*.unity
 
 # Visual Studio / Rider generated files
 ExportedObj/
