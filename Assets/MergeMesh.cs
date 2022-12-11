@@ -3,61 +3,74 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class MergeMesh : MonoBehaviour
+
 {
-    public List<MeshFilter> meshFilters; // The list of mesh filters to merge
+    // The list of mesh filters to process
+    public MeshFilter[] meshFilters;
 
-    // The combined mesh and its corresponding mesh filter
-    private Mesh combinedMesh;
-    private MeshFilter combinedMeshFilter;
+    // The box GameObject that defines the volume of interest
+    public GameObject boxObject;
 
-    void Start()
-    {
-        // Create a new mesh to store the merged meshes
-        combinedMesh = new Mesh();
+    // The output mesh
+    public Mesh outputMesh;
 
-        // Assign the combined mesh to the mesh filter on this game object
-        combinedMeshFilter = GetComponent<MeshFilter>();
-        combinedMeshFilter.mesh = combinedMesh;
-
-        // Merge the meshes from the input mesh filters
-        MergeMeshes();
-    }
-
+    // Update is called once per frame
     void Update()
     {
-        // Check if any of the input mesh filters have changed
-        foreach (MeshFilter meshFilter in meshFilters)
-        {
-            if (!meshFilter.mesh.isReadable )
-            {
-                return;
-            }
-        }
-        MergeMeshes();
-    }
+        // Get the bounds of the volume of interest from the box GameObject
+        Bounds bounds = boxObject.GetComponent<BoxCollider>().bounds;
 
-    void MergeMeshes()
-    {
-        // Create lists to store the combined vertices, normals, and triangles
-        List<Vector3> combinedVertices = new List<Vector3>();
-        List<Vector3> combinedNormals = new List<Vector3>();
-        List<int> combinedTriangles = new List<int>();
+        // Create a list to hold the filtered vertices
+        List<Vector3> filteredVertices = new List<Vector3>();
 
-        // Loop through each mesh filter in the list
+        // Create a list to hold the filtered triangles
+        List<int> filteredTriangles = new List<int>();
+
+        // Loop through all the mesh filters
         foreach (MeshFilter meshFilter in meshFilters)
         {
             // Get the mesh from the mesh filter
             Mesh mesh = meshFilter.mesh;
 
-            // Combine the vertices, normals, and triangles from the mesh into the lists
-            combinedVertices.AddRange(mesh.vertices);
-            combinedNormals.AddRange(mesh.normals);
-            combinedTriangles.AddRange(mesh.triangles);
+            // Get the world-space position of the mesh
+            Vector3 meshPosition = meshFilter.transform.position;
+
+            // Get the world-space rotation of the mesh
+            Quaternion meshRotation = meshFilter.transform.rotation;
+
+            // Loop through all the vertices in the mesh
+            foreach (Vector3 vertex in mesh.vertices)
+            {
+                // Transform the vertex from local space to world space
+                Vector3 worldVertex = meshPosition + meshRotation * vertex;
+
+                // Check if the vertex is inside the volume of interest
+                if (bounds.Contains(worldVertex))
+                {
+                    // Add the vertex to the list of filtered vertices
+                    filteredVertices.Add(worldVertex);
+                }
+            }
+
+            // Loop through all the triangles in the mesh
+            foreach (int triangleIndex in mesh.triangles)
+            {
+                // Add the triangle index to the list of filtered triangles
+                filteredTriangles.Add(triangleIndex);
+            }
         }
 
-        // Set the combined vertices, normals, and triangles to the mesh
-        combinedMesh.SetVertices(combinedVertices);
-        combinedMesh.SetNormals(combinedNormals);
-        combinedMesh.SetTriangles(combinedTriangles, 0);
+        // Create a new mesh for the output
+        outputMesh = new Mesh();
+
+        // Set the filtered vertices as the mesh's vertices
+        outputMesh.vertices = filteredVertices.ToArray();
+
+        // Set the filtered triangles as the mesh's triangles
+        outputMesh.triangles = filteredTriangles.ToArray();
+
+        // Recalculate the normals and tangents of the output mesh
+        outputMesh.RecalculateNormals();
+        outputMesh.RecalculateTangents();
     }
 }
