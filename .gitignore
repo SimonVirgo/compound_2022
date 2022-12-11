@@ -1,0 +1,31 @@
+﻿# This file should be placed at the root of your Unity project directory
+
+# Unity generated files
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Ll]ibrary/
+
+# Unity editor backup files
+*.meta
+*.unityproj
+*.asset
+*.unity
+
+# Visual Studio / Rider generated files
+ExportedObj/
+.vs/
+*.csproj
+*.pidb
+*.sln
+*.userprefs
+
+# Visual Studio cache directory
+.idea/
+
+# Rider logs
+*.log
+
+# Visual Studio / Rider user-generated files
+*.csproj.user
+*.csproj.meta
