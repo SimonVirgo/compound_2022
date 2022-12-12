@@ -8,6 +8,9 @@ using UnityEngine.Serialization;
 
 public class KinectMesh : MonoBehaviour
 {
+    public BoxCollider filterBox;
+    // The bounds of the bounding box
+    
 
     public int sensorIndex;
     //Variable for handling Kinect
@@ -41,6 +44,7 @@ public class KinectMesh : MonoBehaviour
 
     void Start()
     {
+        
         //The method to initialize Kinect
         InitKinect();
         //Initialization for colored mesh rendering
@@ -85,6 +89,7 @@ public class KinectMesh : MonoBehaviour
         //Instantiate mesh
         mesh = new Mesh();
         mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+        
 
         //Allocation of vertex and color storage space for the total number of pixels in the depth image
         vertices = new Vector3[num];
@@ -138,55 +143,77 @@ public class KinectMesh : MonoBehaviour
                 int tl, tr, bl, br;
                 for (int y = 0; y < depthHeight; y++)
                 {
+                    
                     for (int x = 0; x < depthWidth; x++)
                     {
 
                         vertices[pointIndex].x = PointCloud[pointIndex].X * 0.001f;
                         vertices[pointIndex].y = -PointCloud[pointIndex].Y * 0.001f;
                         vertices[pointIndex].z = PointCloud[pointIndex].Z * 0.001f;
-
-                        //colors[pointIndex].a = 255;
-                        //colors[pointIndex].b = colorArray[pointIndex].B;
-                        //colors[pointIndex].g = colorArray[pointIndex].G;
-                        //colors[pointIndex].r = colorArray[pointIndex].R;
-
-                        if (x != (depthWidth - 1) && y != (depthHeight - 1))
+                        
+                        
+                        //filter out all vertices that have their world space location outside of the filter box
+                        var worldSpaceLocation = transform.TransformPoint(vertices[pointIndex]);
+                        if (filterBox.bounds.Contains(worldSpaceLocation))
                         {
-                            topLeft = pointIndex;
-                            topRight = topLeft + 1;
-                            bottomLeft = topLeft + depthWidth;
-                            bottomRight = bottomLeft + 1;
-                            tl = PointCloud[topLeft].Z;
-                            tr = PointCloud[topRight].Z;
-                            bl = PointCloud[bottomLeft].Z;
-                            br = PointCloud[bottomRight].Z;
+                            //colors[pointIndex].a = 255;
+                            //colors[pointIndex].b = colorArray[pointIndex].B;
+                            //colors[pointIndex].g = colorArray[pointIndex].G;
+                            //colors[pointIndex].r = colorArray[pointIndex].R;
 
-                            if (tl > nearClip && tr > nearClip && bl > nearClip)
+                            if (x != (depthWidth - 1) && y != (depthHeight - 1))
                             {
-                                indeces[triangleIndex++] = topLeft;
-                                indeces[triangleIndex++] = topRight;
-                                indeces[triangleIndex++] = bottomLeft;
-                            }
-                            else
-                            {
-                                indeces[triangleIndex++] = 0;
-                                indeces[triangleIndex++] = 0;
-                                indeces[triangleIndex++] = 0;
-                            }
+                                topLeft = pointIndex;
+                                topRight = topLeft + 1;
+                                bottomLeft = topLeft + depthWidth;
+                                bottomRight = bottomLeft + 1;
+                                tl = PointCloud[topLeft].Z;
+                                tr = PointCloud[topRight].Z;
+                                bl = PointCloud[bottomLeft].Z;
+                                br = PointCloud[bottomRight].Z;
 
-                            if (bl > nearClip && tr > nearClip && br > nearClip)
-                            {
-                                indeces[triangleIndex++] = bottomLeft;
-                                indeces[triangleIndex++] = topRight;
-                                indeces[triangleIndex++] = bottomRight;
-                            }
-                            else
-                            {
-                                indeces[triangleIndex++] = 0;
-                                indeces[triangleIndex++] = 0;
-                                indeces[triangleIndex++] = 0;
+                                if (tl > nearClip && tr > nearClip && bl > nearClip)
+                                {
+                                    indeces[triangleIndex++] = topLeft;
+                                    indeces[triangleIndex++] = topRight;
+                                    indeces[triangleIndex++] = bottomLeft;
+                                }
+                                else
+                                {
+                                    indeces[triangleIndex++] = 0;
+                                    indeces[triangleIndex++] = 0;
+                                    indeces[triangleIndex++] = 0;
+                                }
+
+                                if (bl > nearClip && tr > nearClip && br > nearClip)
+                                {
+                                    indeces[triangleIndex++] = bottomLeft;
+                                    indeces[triangleIndex++] = topRight;
+                                    indeces[triangleIndex++] = bottomRight;
+                                }
+                                else
+                                {
+                                    indeces[triangleIndex++] = 0;
+                                    indeces[triangleIndex++] = 0;
+                                    indeces[triangleIndex++] = 0;
+                                }
                             }
                         }
+                        
+                        else
+                        {
+                            if (pointIndex > 0)
+                            {
+                                vertices[pointIndex].x = vertices[pointIndex-1].x;
+                                vertices[pointIndex].y = vertices[pointIndex-1].y;
+                                vertices[pointIndex].z = vertices[pointIndex-1].z;
+                            }
+
+                            indeces[triangleIndex++] = 0;
+                            indeces[triangleIndex++] = 0;
+                            indeces[triangleIndex++] = 0;
+                        }
+
                         pointIndex++;
                     }
                 }
@@ -197,7 +224,7 @@ public class KinectMesh : MonoBehaviour
                 mesh.vertices = vertices;
 
                 mesh.triangles = indeces;
-
+                
                 mesh.RecalculateNormals();
                 mesh.RecalculateBounds();
                 
