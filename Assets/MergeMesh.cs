@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,72 +6,118 @@ using UnityEngine;
 public class MergeMesh : MonoBehaviour
 
 {
-    // The list of mesh filters to process
-    public MeshFilter[] meshFilters;
+    // The input meshes to merge
+    public MeshFilter[] inputMeshes;
 
-    // The box GameObject that defines the volume of interest
-    public GameObject boxObject;
+    public GameObject FilterBox;
+    // The bounds of the bounding box
+    private Bounds bounds;
 
-    // The output mesh
-    public Mesh outputMesh;
+    // The resulting merged mesh
+    public MeshFilter outputMesh;
 
-    // Update is called once per frame
-    void Update()
+    // Flag to indicate whether to discard triangles outside of the bounding box
+    public bool cullTriangles = true;
+
+    private void Start()
     {
-        // Get the bounds of the volume of interest from the box GameObject
-        Bounds bounds = boxObject.GetComponent<BoxCollider>().bounds;
+        bounds = FilterBox.GetComponent<BoxCollider>().bounds;
+    }
 
-        // Create a list to hold the filtered vertices
-        List<Vector3> filteredVertices = new List<Vector3>();
+    private void Update()
+    {
+        MergeMeshCombine();
+        //MergeMeshPiecewise();
+    }
 
-        // Create a list to hold the filtered triangles
-        List<int> filteredTriangles = new List<int>();
-
-        // Loop through all the mesh filters
-        foreach (MeshFilter meshFilter in meshFilters)
+    void MergeMeshCombine()
+    {
+        CombineInstance[] combine = new CombineInstance[inputMeshes.Length];   
+        
+        int i = 0;
+        while (i < inputMeshes.Length)
         {
-            // Get the mesh from the mesh filter
-            Mesh mesh = meshFilter.mesh;
+            combine[i].mesh = inputMeshes[i].sharedMesh;
+            
+            //meshFilters[i].gameObject.SetActive(false);
+            
+            
+            //here starts the fun part
+            
+            //here the fun part stops
+            
+            combine[i].transform = inputMeshes[i].transform.localToWorldMatrix;
+            i++;
+        }
+        transform.GetComponent<MeshFilter>().mesh = new Mesh();
+        transform.GetComponent<MeshFilter>().mesh.CombineMeshes(combine);
+        transform.gameObject.SetActive(true);
+    }
 
-            // Get the world-space position of the mesh
-            Vector3 meshPosition = meshFilter.transform.position;
+    void MergeMeshPiecewise()
+    {
+        // Create a new mesh to store the merged result
+        Mesh mergedMesh = new Mesh();
 
-            // Get the world-space rotation of the mesh
-            Quaternion meshRotation = meshFilter.transform.rotation;
+        // Create lists to store the merged vertices, triangles, and normals
+        List<Vector3> vertices = new List<Vector3>();
+        List<int> triangles = new List<int>();
+        List<Vector3> normals = new List<Vector3>();
 
-            // Loop through all the vertices in the mesh
-            foreach (Vector3 vertex in mesh.vertices)
+        // Loop through each input mesh
+        foreach (var meshFilter in inputMeshes)
+        {
+            // Get the input mesh
+            var mesh = meshFilter.sharedMesh;
+
+            // Loop through each triangle in the input mesh
+            for (int i = 0; i < mesh.triangles.Length; i += 3)
             {
-                // Transform the vertex from local space to world space
-                Vector3 worldVertex = meshPosition + meshRotation * vertex;
-
-                // Check if the vertex is inside the volume of interest
-                if (bounds.Contains(worldVertex))
+                // Check if we need to discard the triangle
+                if (cullTriangles && !IsTriangleInsideBounds(mesh, i))
                 {
-                    // Add the vertex to the list of filtered vertices
-                    filteredVertices.Add(worldVertex);
+                    // Skip this triangle if it is outside of the bounding box
+                    continue;
                 }
-            }
 
-            // Loop through all the triangles in the mesh
-            foreach (int triangleIndex in mesh.triangles)
-            {
-                // Add the triangle index to the list of filtered triangles
-                filteredTriangles.Add(triangleIndex);
+                // Add the triangle vertices to the list of merged vertices
+                vertices.Add(mesh.vertices[mesh.triangles[i]]);
+                vertices.Add(mesh.vertices[mesh.triangles[i + 1]]);
+                vertices.Add(mesh.vertices[mesh.triangles[i + 2]]);
+
+                // Add the triangle indices to the list of merged triangles
+                int vertexCount = vertices.Count;
+                triangles.Add(vertexCount - 3);
+                triangles.Add(vertexCount - 2);
+                triangles.Add(vertexCount - 1);
+
+                // Add the triangle normals to the list of merged normals
+                normals.Add(mesh.normals[mesh.triangles[i]]);
+                normals.Add(mesh.normals[mesh.triangles[i + 1]]);
+                normals.Add(mesh.normals[mesh.triangles[i + 2]]);
             }
         }
 
-        // Create a new mesh for the output
-        outputMesh = new Mesh();
+        // Set the merged mesh data
+        mergedMesh.SetVertices(vertices);
+        mergedMesh.SetTriangles(triangles, 0);
+        mergedMesh.SetNormals(normals);
 
-        // Set the filtered vertices as the mesh's vertices
-        outputMesh.vertices = filteredVertices.ToArray();
+        // Assign the merged mesh to the output mesh filter
+        outputMesh.mesh = mergedMesh;
+        outputMesh.mesh.RecalculateBounds();
+    }
 
-        // Set the filtered triangles as the mesh's triangles
-        outputMesh.triangles = filteredTriangles.ToArray();
+    // Method to check if a triangle is inside the bounding box
+// Method to check if a triangle is inside the bounding box
+    private bool IsTriangleInsideBounds(Mesh mesh, int triangleIndex)
+    {
+        // Get the triangle vertices
+        var v0 = mesh.vertices[mesh.triangles[triangleIndex]];
+        var v1 = mesh.vertices[mesh.triangles[triangleIndex + 1]];
+        var v2 = mesh.vertices[mesh.triangles[triangleIndex + 2]];
 
-        // Recalculate the normals and tangents of the output mesh
-        outputMesh.RecalculateNormals();
-        outputMesh.RecalculateTangents();
+        // Check if any of the triangle vertices are inside the bounding box
+        return bounds.Contains(v0) & bounds.Contains(v1) & bounds.Contains(v2);
     }
 }
