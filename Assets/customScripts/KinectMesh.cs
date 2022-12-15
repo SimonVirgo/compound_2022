@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Microsoft.Azure.Kinect.Sensor;
@@ -8,8 +9,15 @@ using UnityEngine.Serialization;
 
 public class KinectMesh : MonoBehaviour
 {
-    public BoxCollider filterBox;
+   // public BoxCollider filterBox;
     // The bounds of the bounding box
+    
+    //array of planes to check vectors against
+    public GameObject[] planes;
+    //array of planes in local space
+    private Plane[] localPlanes;
+    
+    
     
 
     public int sensorIndex;
@@ -35,6 +43,8 @@ public class KinectMesh : MonoBehaviour
 
     int nearClip = 300;
 
+    public event EventHandler NewMasterFrameAvailable;
+
     //Stop Kinect as soon as this object disappear
     private void OnDestroy()
     {
@@ -44,7 +54,7 @@ public class KinectMesh : MonoBehaviour
 
     void Start()
     {
-        
+        ConvertPlanesToLocalSpace();
         //The method to initialize Kinect
         InitKinect();
         //Initialization for colored mesh rendering
@@ -56,6 +66,33 @@ public class KinectMesh : MonoBehaviour
         
         Task t = KinectLoop(kinect);
     }
+    
+    //Method to convert the planes from world space to local space
+    private void ConvertPlanesToLocalSpace()
+    {
+        if (planes==null) return;
+        
+        localPlanes = new Plane[planes.Length];
+        for (int i = 0; i < planes.Length; i++)
+        {
+            localPlanes[i] = new Plane(transform.InverseTransformDirection(planes[i].transform.up), transform.InverseTransformPoint(planes[i].transform.position));
+        }
+    }
+    
+    //Method that accepts a Vector3 and returns true if it is inside the planes
+    private bool IsInsidePlanes(Vector3 point)
+    {
+        if (planes==null) return true;
+        for (int i = 0; i < localPlanes.Length; i++)
+        {
+            if (localPlanes[i].GetSide(point))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    
 
     //Initialization of Kinect
     void InitKinect()
@@ -127,8 +164,10 @@ public class KinectMesh : MonoBehaviour
         
         while (true)
         {
+            
             using (Capture capture = await Task.Run(() => device.GetCapture()).ConfigureAwait(true))
             {
+               
                 //Getting color information
                 //Image modifiedColor = transformation.ColorImageToDepthCamera(capture);
                 //BGRA[] colorArray = modifiedColor.GetPixels<BGRA>().ToArray();
@@ -153,8 +192,9 @@ public class KinectMesh : MonoBehaviour
                         
                         
                         //filter out all vertices that have their world space location outside of the filter box
-                        var worldSpaceLocation = transform.TransformPoint(vertices[pointIndex]);
-                        if (filterBox.bounds.Contains(worldSpaceLocation))
+                        //check for all planes if the point is in front of it
+                        
+                        if (IsInsidePlanes(vertices[pointIndex]))
                         {
                             //colors[pointIndex].a = 255;
                             //colors[pointIndex].b = colorArray[pointIndex].B;
@@ -225,9 +265,10 @@ public class KinectMesh : MonoBehaviour
 
                 mesh.triangles = indeces;
                 
-                mesh.RecalculateNormals();
-                mesh.RecalculateBounds();
+             //   mesh.RecalculateNormals();
+             //   mesh.RecalculateBounds();
                 
+                NewMasterFrameAvailable?.Invoke(this, EventArgs.Empty );
                 
                 
             }
