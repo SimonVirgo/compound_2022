@@ -26,10 +26,14 @@ public class followBodyOnKinect : MonoBehaviour
 
     void AdaptColliderBounds()
     {
-        BoxRenderer.ResetBounds();
+       // BoxRenderer.ResetBounds();
         bool includesVertices = false; 
+        //add tolerance size to new bounds
+        
+        var enlargedBoundsSize = BoxRenderer.bounds.size + new Vector3(toleranceDistance, toleranceDistance, toleranceDistance);    
+        var enlargedBounds = new Bounds(BoxRenderer.bounds.center, enlargedBoundsSize);
         //enlarge the collider by the tolerance distance in all directions
-        BoxRenderer.bounds.Expand(toleranceDistance);   
+          
         //instantiate initial bound values:
         float minX = float.MaxValue;
         float maxX = float.MinValue;
@@ -41,7 +45,7 @@ public class followBodyOnKinect : MonoBehaviour
         //check which vertices of the mesh are in the collider bounds
         for (int i = 0; i < vertices.Length; i++)
         {
-            if (BoxRenderer.bounds.Contains(vertices[i]))
+            if (enlargedBounds.Contains(vertices[i]))
             { 
                 includesVertices = true;
                 //update the bounds to incorporate the 
