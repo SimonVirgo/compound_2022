@@ -1,0 +1,58 @@
+{
+    "name": "midiControls",
+    "maps": [
+        {
+            "name": "New action map",
+            "id": "0162d29f-bf63-4610-a23b-3652bba6836d",
+            "actions": [
+                {
+                    "name": "1top",
+                    "type": "Value",
+                    "id": "8225f232-16dd-4f56-9c77-07d31c18fb79",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "New action1",
+                    "type": "Button",
+                    "id": "d71e829c-1d72-42ed-9335-07140ea42936",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": ""
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "6e26dc7a-0d27-460b-a3e2-c5421f78c2bd",
+                    "path": "<MidiDevice>/note041",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "midi",
+                    "action": "1top",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "68e5097c-9de8-4789-bda8-71b4ea34191c",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "midi",
+                    "action": "New action1",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "midi",
+            "bindingGroup": "midi",
+            "devices": []
+        }
+    ]
+}
