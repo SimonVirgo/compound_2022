@@ -21,7 +21,7 @@ public sealed class DeviceController : MonoBehaviour
 
     #region Asset reference
 
-    [SerializeField, HideInInspector] ComputeShader _compute = null;
+    [SerializeField] ComputeShader _compute = null;
 
     #endregion
 
@@ -29,6 +29,9 @@ public sealed class DeviceController : MonoBehaviour
 
     public RenderTexture ColorMap => _colorMap;
     public RenderTexture PositionMap => _positionMap;
+
+    public Vector3[] Positions;
+    
 
     #endregion
 
@@ -40,6 +43,7 @@ public sealed class DeviceController : MonoBehaviour
     ComputeBuffer _depthBuffer;
     RenderTexture _colorMap;
     RenderTexture _positionMap;
+    ComputeBuffer _pointCloudBuffer;
 
     void SetDeviceSettings(DeviceSettings settings)
     {
@@ -59,6 +63,7 @@ public sealed class DeviceController : MonoBehaviour
         public static int MaxDepth    = Shader.PropertyToID("MaxDepth");
         public static int ColorMap    = Shader.PropertyToID("ColorMap");
         public static int PositionMap = Shader.PropertyToID("PositionMap");
+        public static int PointCloud = Shader.PropertyToID("PointCloud");
     }
 
     #endregion
@@ -73,9 +78,15 @@ public sealed class DeviceController : MonoBehaviour
         // Temporary objects for conversion
         var width = ThreadedDriver.ImageWidth;
         var height = ThreadedDriver.ImageHeight;
+        
+        
 
         _colorBuffer = new ComputeBuffer(width * height, 4);
         _depthBuffer = new ComputeBuffer(width * height / 2, 4);
+        // Create the point cloud buffer
+        _pointCloudBuffer = new ComputeBuffer(width*height, sizeof(float) * 3, ComputeBufferType.Default);
+        Positions = new Vector3[width * height];
+        
 
         _colorMap = new RenderTexture
           (width, height, 0, RenderTextureFormat.Default);
@@ -115,7 +126,12 @@ public sealed class DeviceController : MonoBehaviour
 
         // Try retrieving the last frame.
         var (color, depth) = _driver.LockLastFrame();
-        if (color.IsEmpty || depth.IsEmpty) return;
+        if (color.IsEmpty || depth.IsEmpty)
+        {
+            return;
+        }
+        
+        // This part is only triggered when a new frame is available! call an event here!
 
         // Load the frame data into the compute buffers.
         _colorBuffer.SetData(color.Span);
@@ -131,8 +147,13 @@ public sealed class DeviceController : MonoBehaviour
         _compute.SetBuffer(0, ID.XYTable, _xyTable);
         _compute.SetTexture(0, ID.ColorMap, _colorMap);
         _compute.SetTexture(0, ID.PositionMap, _positionMap);
+        //_compute.SetBuffer(0,ID.PointCloud,_pointCloudBuffer);
         _compute.Dispatch(0, _colorMap.width / 8, _colorMap.height / 8, 1);
+        
+        // Read the point cloud buffer and store it in a Vector3 array
+        //_pointCloudBuffer.GetData(Positions);
     }
+
 
     #endregion
 }
