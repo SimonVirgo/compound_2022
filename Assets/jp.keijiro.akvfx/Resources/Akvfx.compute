@@ -6,6 +6,7 @@ Buffer<float> XYTable;
 float MaxDepth;
 RWTexture2D<float4> ColorMap;
 RWTexture2D<float4> PositionMap;
+RWBuffer<float3> PointCloud;
 
 float3 uint_to_float3(uint raw)
 {
@@ -39,4 +40,6 @@ void Unproject(uint2 id : SV_DispatchThreadID)
     // Map
     ColorMap[id] = float4(color, mask);
     PositionMap[id] = float4(xy * z, z, mask);
+    // Write position data to point cloud array
+    PointCloud[idx] = float3(xy * z, z);
 }
