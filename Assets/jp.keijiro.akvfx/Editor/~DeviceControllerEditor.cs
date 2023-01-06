@@ -4,7 +4,7 @@ using UnityEditor;
 namespace Akvfx {
 
 [CanEditMultipleObjects]
-[CustomEditor(typeof(DeviceController))]
+//[CustomEditor(typeof(DeviceController))]
 sealed class DeviceControllerEditor : Editor
 {
     SerializedProperty _deviceSettings;
