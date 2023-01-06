@@ -13,6 +13,8 @@ sealed class ThreadedDriver : IDisposable
     public static int ImageWidth => 640;
     public static int ImageHeight => 576;
 
+    public Image cloudImage;
+
     public int index = 0;
 
     public ThreadedDriver(DeviceSettings settings)
@@ -119,7 +121,7 @@ sealed class ThreadedDriver : IDisposable
           (new DeviceConfiguration
             { ColorFormat = ImageFormat.ColorBGRA32,
               ColorResolution = ColorResolution.R1536p, // 2048 x 1536 (4:3)
-              DepthMode = DepthMode.NFOV_Unbinned,      // 640x576
+              DepthMode = DepthMode.NFOV_2x2Binned,//DepthMode.NFOV_Unbinned,      // 640x576
               SynchronizedImagesOnly = true });
 
         // Construct XY table as a background task.
@@ -136,6 +138,8 @@ sealed class ThreadedDriver : IDisposable
         {
             // Get a frame capture.
             var capture = device.GetCapture();
+            
+            cloudImage = transformation.DepthImageToPointCloud(capture.Depth);
 
             // Transform the color image to the depth perspective.
             var color = transformation.ColorImageToDepthCamera(capture);
