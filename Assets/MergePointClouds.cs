@@ -14,7 +14,8 @@ public class MergePointClouds : MonoBehaviour
     public GameObject[] gameObjects;
 
     // This is the array that will hold the converted point clouds
-    public Vector3[] convertedPointClouds;
+    [HideInInspector]
+    public Vector3[] combinedPointCloud;
 
 
     private DeviceController[] deviceControllers;
@@ -25,6 +26,7 @@ public class MergePointClouds : MonoBehaviour
         EventTriggerKinect.GetComponent<DeviceController>().NewMasterFrameAvailable += Combine;
         deviceControllers = new DeviceController[gameObjects.Length];
         transforms = new Transform[gameObjects.Length];
+        combinedPointCloud = Array.Empty<Vector3>();
         for (int i = 0; i < gameObjects.Length; i++)
         {
             deviceControllers[i] = gameObjects[i].GetComponent<DeviceController>();
@@ -41,9 +43,7 @@ public class MergePointClouds : MonoBehaviour
     }
     void Combine()
     {
-        // Initialize the list of converted point clouds
-        convertedPointClouds = new Vector3[0];
-
+        combinedPointCloud = Array.Empty<Vector3>();
         // Iterate through each game object in the list
         for (int i = 0; i < gameObjects.Length; i++)
         
@@ -52,7 +52,7 @@ public class MergePointClouds : MonoBehaviour
             Vector3[] worldSpacePointCloud = ConvertPointCloud(deviceControllers[i].Positions, transforms[i]);
 
             // Combine the converted point cloud with the existing converted point clouds
-            convertedPointClouds = CombinePointClouds(convertedPointClouds, worldSpacePointCloud);
+            combinedPointCloud = CombinePointClouds(combinedPointCloud, worldSpacePointCloud);
         }
     }
 
