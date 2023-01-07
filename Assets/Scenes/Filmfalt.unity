@@ -1503,7 +1503,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1350104326
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1516,7 +1516,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd46cb5bf86cd3c4db4a091b86101690, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputMesh: {fileID: 1776048085}
+  EventTriggerKinect: {fileID: 1985193416}
+  inputMesh: {fileID: 0}
+  inputPointCloud: {fileID: 1776048086}
   toleranceDistance: 0.15
   minimumSizeX: 0.3
   minimumSizeY: 0.3
@@ -1913,13 +1915,14 @@ GameObject:
   - component: {fileID: 1776048082}
   - component: {fileID: 1776048085}
   - component: {fileID: 1776048084}
+  - component: {fileID: 1776048086}
   m_Layer: 0
   m_Name: MergeMesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1776048082
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1927,7 +1930,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1776048081}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: eb7cc1a37e4db9d43b3aa86e66550285, type: 3}
   m_Name: 
@@ -2003,6 +2006,22 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1776048081}
   m_Mesh: {fileID: 0}
+--- !u!114 &1776048086
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1776048081}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb8490b056434449adfc8beb76a66239, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  EventTriggerKinect: {fileID: 1985193416}
+  gameObjects:
+  - {fileID: 1985193416}
+  combinedPointCloud: []
 --- !u!1 &1985193416
 GameObject:
   m_ObjectHideFlags: 0
