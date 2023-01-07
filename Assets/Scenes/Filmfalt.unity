@@ -1933,10 +1933,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inputMeshes:
-  - {fileID: 1212311005}
+  - {fileID: 1985193419}
+  - {fileID: 1425422314}
   outputMesh: {fileID: 1776048085}
   cullTriangles: 1
-  EventTriggerKinect: {fileID: 1212311002}
+  EventTriggerKinect: {fileID: 1985193416}
 --- !u!4 &1776048083
 Transform:
   m_ObjectHideFlags: 0
