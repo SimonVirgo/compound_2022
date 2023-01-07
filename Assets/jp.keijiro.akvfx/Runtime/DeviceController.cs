@@ -60,6 +60,7 @@ public sealed class DeviceController : MonoBehaviour
     public RenderTexture ColorMap => _colorMap;
     public RenderTexture PositionMap => _positionMap;
 
+    [HideInInspector]
     public Vector3[] Positions;
     
 
@@ -284,6 +285,7 @@ public sealed class DeviceController : MonoBehaviour
                 mesh.vertices = vertices;
 
                 mesh.triangles = indeces;
+                Positions = vertices;
                 
                 //trigger Frame processed event
                 NewMasterFrameAvailable?.Invoke(this, EventArgs.Empty );
