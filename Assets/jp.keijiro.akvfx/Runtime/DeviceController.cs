@@ -1,3 +1,4 @@
+using System;
 using Microsoft.Azure.Kinect.Sensor;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -6,6 +7,7 @@ namespace Akvfx {
 
 public sealed class DeviceController : MonoBehaviour
 {
+    public event EventHandler NewMasterFrameAvailable;
     //array of planes to check vectors against
     public GameObject[] planes;
     //array of planes in local space
@@ -282,6 +284,9 @@ public sealed class DeviceController : MonoBehaviour
                 mesh.vertices = vertices;
 
                 mesh.triangles = indeces;
+                
+                //trigger Frame processed event
+                NewMasterFrameAvailable?.Invoke(this, EventArgs.Empty );
     }
     void InitMesh()
     {
