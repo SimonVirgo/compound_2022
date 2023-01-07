@@ -1,10 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Akvfx;
 using UnityEngine;
 
 public class MergeMesh : MonoBehaviour
-
+//This Script causes a memory leak somehere! DO NOT USE!!!
 {
     // The input meshes to merge
     public MeshFilter[] inputMeshes;
@@ -23,7 +24,7 @@ public class MergeMesh : MonoBehaviour
 
     void SubscribeEvent()
     {
-        EventTriggerKinect.GetComponent<KinectMesh>().NewMasterFrameAvailable += MergeMeshCombine;
+        EventTriggerKinect.GetComponent<DeviceController>().NewMasterFrameAvailable += MergeMeshCombine;
     }
 
     private void MergeMeshCombine(object sender, EventArgs e)
@@ -56,7 +57,7 @@ public class MergeMesh : MonoBehaviour
             combine[i].transform = inputMeshes[i].transform.localToWorldMatrix;
             i++;
         }
-        transform.GetComponent<MeshFilter>().mesh = new Mesh();
+        //transform.GetComponent<MeshFilter>().mesh = new Mesh();
         transform.GetComponent<MeshFilter>().mesh.CombineMeshes(combine,false,true,false);
         transform.gameObject.SetActive(true);
     }
