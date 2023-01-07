@@ -1,9 +1,12 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Akvfx;
 using UnityEngine;
 
 public class followBodyOnKinect : MonoBehaviour
 {
+    public GameObject EventTriggerKinect;
     private MeshRenderer BoxRenderer;
     public MeshFilter inputMesh;
     public MergePointClouds inputPointCloud;
@@ -21,12 +24,36 @@ public class followBodyOnKinect : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        if (EventTriggerKinect)
+        {
+            EventTriggerKinect.GetComponent<DeviceController>().NewMasterFrameAvailable += AdaptColliderBounds;
+        }
+       
         //get the box collider from the game Object.
         BoxRenderer = GetComponent<MeshRenderer>();
-    }
+        
 
+    }
+    private void AdaptColliderBounds(object sender, EventArgs e)
+    {
+        AdaptColliderBounds();
+    }
     void AdaptColliderBounds()
     {
+        //get vertices from the mesh   
+        if (inputMesh)
+        {
+            vertices = inputMesh.mesh.vertices;
+        }
+        else if (inputPointCloud)
+        {
+            vertices = inputPointCloud.combinedPointCloud;
+        }
+        else
+        {
+            Debug.LogError("No input mesh or point cloud assigned to the script!");
+        }
+        
        // BoxRenderer.ResetBounds();
         bool includesVertices = false; 
         //add tolerance size to new bounds
@@ -89,19 +116,7 @@ public class followBodyOnKinect : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //get vertices from the mesh   
-        if (inputMesh)
-        {
-            vertices = inputMesh.mesh.vertices;
-        }
-        else if (inputPointCloud)
-        {
-            vertices = inputPointCloud.combinedPointCloud;
-        }
-        else
-        {
-            Debug.LogError("No input mesh or point cloud assigned to the script!");
-        }
+        if (EventTriggerKinect) return;
 
         //adapt the collider bounds
         AdaptColliderBounds();
