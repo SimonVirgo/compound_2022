@@ -6,6 +6,7 @@ public class followBodyOnKinect : MonoBehaviour
 {
     private MeshRenderer BoxRenderer;
     public MeshFilter inputMesh;
+    public MergePointClouds inputPointCloud;
     private Vector3[] vertices;
     public float toleranceDistance;
     public float minimumSizeX;
@@ -88,8 +89,20 @@ public class followBodyOnKinect : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //get vertices from the mesh    
-        vertices = inputMesh.sharedMesh.vertices;
+        //get vertices from the mesh   
+        if (inputMesh)
+        {
+            vertices = inputMesh.mesh.vertices;
+        }
+        else if (inputPointCloud)
+        {
+            vertices = inputPointCloud.combinedPointCloud;
+        }
+        else
+        {
+            Debug.LogError("No input mesh or point cloud assigned to the script!");
+        }
+
         //adapt the collider bounds
         AdaptColliderBounds();
     }
