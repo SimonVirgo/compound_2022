@@ -2,11 +2,13 @@ using System;
 using Microsoft.Azure.Kinect.Sensor;
 using UnityEngine;
 using UnityEngine.Serialization;
+using System.Collections;
 
 namespace Akvfx {
 
 public sealed class DeviceController : MonoBehaviour
 {
+    private bool _isRunning = false;
     public event EventHandler NewMasterFrameAvailable;
     //array of planes to check vectors against
     public GameObject[] planes;
@@ -131,6 +133,9 @@ public sealed class DeviceController : MonoBehaviour
           (width, height, 0, RenderTextureFormat.ARGBFloat);
         _positionMap.enableRandomWrite = true;
         _positionMap.Create();
+        
+        
+
     }
 
     void OnDestroy()
@@ -189,12 +194,24 @@ public sealed class DeviceController : MonoBehaviour
         
         PointCloud = _driver.cloudImage.GetPixels<Short3>().ToArray();
         
-        if (createMesh)
+        if (!_isRunning)
         {
-            CreateMesh();
+            _isRunning = true;
+            StartCoroutine(CreateMeshCoroutine());
         }
+
     }
 
+    private IEnumerator CreateMeshCoroutine()
+    {
+        while (createMesh)
+        {
+            // Run the createMesh method
+            CreateMesh();
+            // Wait for 0.1 seconds before continuing
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
     void CreateMesh()
     {
                         int triangleIndex = 0;
